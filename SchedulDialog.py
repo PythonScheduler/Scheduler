@@ -1,30 +1,21 @@
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import (QVBoxLayout, QTextEdit, QPushButton, QDialog)
 from PyQt5.QtCore import QDate
 import sys
 
-class CalWindow(QDialog):
+class SchedulDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
         #프레임 설정
-        self.setWindowTitle('달력')
+        self.setWindowTitle('스케줄 추가하기')
         self.setGeometry(890, 200, 500, 500)
         layout = QVBoxLayout(self)
-        #달력
-        cal = QCalendarWidget(self)
-        cal.setGridVisible(True)
-        #cal.clicked[QDate].connect(self.showDate)
-        layout.addWidget(cal)
-        # 라벨
-       # self.callabel = QLabel(self)
-       # date = cal.selectedDate()
-       # self.callabel.setText(date.tostring())
-       # layout.addWidget(self.callabel)
-        # 텍스트박스
-       # textedit = QTextEdit(self)
-       # layout.addWidget(textedit)
+
+        #textedit 부분
+        self.lineedit = QTextEdit(self)
+        layout.addWidget(self.lineedit)
         #버튼 확인부분
         btnOK = QPushButton("확인")
         btnOK.clicked.connect(self.onOKButtonClicked)
@@ -36,9 +27,12 @@ class CalWindow(QDialog):
 
         self.setLayout(layout)
 
-    def showDate(self, date):
-        self.callabel.setText(date.tostring())
+    #확인 시 text 저장
     def onOKButtonClicked(self):
+        with open('test.txt', 'w') as f:
+            my_text = self.lineedit.toPlainText()
+            f.write(my_text)
+            f.close()
         self.accept()
     def onCancelButtonClicked(self):
         self.reject()
