@@ -1,12 +1,31 @@
-
 import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QCalendarWidget, QDesktopWidget, QGridLayout,
                              QGroupBox, QTextBrowser, QPushButton, QLabel)
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QTimer
+from SchedulDialog import SchedulDialog
 
+class ClickHandler():
+    def __init__(self, time):
+        self.timer = QTimer()
+        self.timer.setInterval(time)
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.timeout)
+        self.click_count = 0
+
+    def timeout(self):
+        if self.click_count > 1:
+            win = SchedulDialog()
+            r = win.showModal()
+            if r:
+                self.click_count = 0
+        self.click_count = 0
+
+    def __call__(self):
+        self.click_count += 1
+        if not self.timer.isActive():
+            self.timer.start()
 class MainWindow(QWidget):
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -20,6 +39,7 @@ class MainWindow(QWidget):
         grid.addWidget(self.createToDoBox(),0,4,3,2)
         self.setLayout(grid)
 
+        self.load_schedul()
         self.center_and_size()
         self.show()  # 순서 구애 받음
 
@@ -28,17 +48,14 @@ class MainWindow(QWidget):
         groupBox = QGroupBox('Calendar')
         groupBox.setFlat(True)
 
-        self.cal = QCalendarWidget(self) # self 쓰지 않으면 다른 메소드에서 사용에 문제됨
+        self.cal = QCalendarWidget(self)  # self 쓰지 않으면 다른 메소드에서 사용에 문제됨
         self.cal.setGridVisible(True)
-        self.cal.clicked[QDate].connect(self.showDate)
 
-        self.lb = QLabel(self)
-        date = self.cal.selectedDate()
-        self.lb.setText(date.toString())
+        self.click_handler = ClickHandler(300)  # 달력 위젯에 클릭 핸들러 넣기 전에
+        self.cal.clicked.connect(self.click_handler)  # 더블클릭 감지 핸들러 추가
 
         calendarBox = QVBoxLayout()
         calendarBox.addWidget(self.cal)
-        calendarBox.addWidget(self.lb)
         groupBox.setLayout(calendarBox)
 
         return groupBox
@@ -67,13 +84,8 @@ class MainWindow(QWidget):
 
         return groupBox
 
-    # 날짜를 라벨에 보여주는 함수
-    def showDate(self, date):
-        self.lb.setText(date.toString())
 
-    # 프로그램을 모니터 중앙에 배치하고 사이즈 지정 함수(시작할 때)
     def center_and_size(self):
-
         self.resize(750, 550)
 
         # 프로그램을 모니터 중앙에 배치
@@ -82,19 +94,16 @@ class MainWindow(QWidget):
         frameInfo.moveCenter(center)  # 창크기의 직사각형을 중앙으로 설정
         self.move(frameInfo.topLeft())  # 창을 직사각형으로 이동
 
-
-
-
+    def load_schedul(self):
+        try:
+            with open('test.txt', 'r') as f:
+                for text in f:
+                    self.textBrowser.append(text)
+        except:
+            self.textBrowser.append('스케줄이 없습니다!')
 
 # 해결할 것들
 
 # 텍스트 브라우저 하나, 버튼 2개(성덕이 짠거, 여기에 다이얼로그 연결) 추가하기
 # QmainWindow?
 # accpet, reject -> Dialog 문제
-
-# def onOKButtonClicked(self):
-    #     self.accept()
-    # def onCancelButtonClicked(self):
-    #     self.reject()
-    # def showModal(self):
-    #     return super().exec_()
