@@ -39,6 +39,7 @@ class MainWindow(QWidget):
         calendarBox = QVBoxLayout()
         calendarBox.addWidget(self.cal)
         calendarBox.addWidget(self.lb)
+        calendarBox.addStretch()
         groupBox.setLayout(calendarBox)
 
         return groupBox
@@ -47,9 +48,19 @@ class MainWindow(QWidget):
     def createToDoBox(self):
         groupBox = QGroupBox('ToDo')
 
-        self.textBrowser = QTextBrowser()
-        self.textBrowser.setAcceptRichText(True)
-        self.textBrowser.setOpenExternalLinks(True)
+        self.everydayLb = QLabel(self)
+        self.everydayLb.setText('매일 할 일')
+
+        self.everyday = QTextBrowser()
+        self.everyday.setAcceptRichText(True)
+        self.everyday.setOpenExternalLinks(True)
+
+        self.checkLb = QLabel(self)
+        self.checkLb.setText('체크')
+
+        self.check = QTextBrowser()
+        self.check.setAcceptRichText(True)
+        self.check.setOpenExternalLinks(True)
 
         # 확인 버튼
         self.btnOK = QPushButton('확인')
@@ -60,7 +71,10 @@ class MainWindow(QWidget):
         # btnOK.clicked.connect(self.함수추가)
 
         toDoBox = QVBoxLayout()
-        toDoBox.addWidget(self.textBrowser)
+        toDoBox.addWidget(self.everydayLb)
+        toDoBox.addWidget(self.everyday)
+        toDoBox.addWidget(self.checkLb)
+        toDoBox.addWidget(self.check)
         toDoBox.addWidget(self.btnOK)
         toDoBox.addWidget(self.btnCancel)
         groupBox.setLayout(toDoBox)
@@ -73,8 +87,8 @@ class MainWindow(QWidget):
 
     # 프로그램을 모니터 중앙에 배치하고 사이즈 지정 함수(시작할 때)
     def center_and_size(self):
-
-        self.resize(750, 550)
+        self.setFixedSize(750,550) # 창크기 고정
+        #self.resize(750, 550)
 
         # 프로그램을 모니터 중앙에 배치
         frameInfo = self.frameGeometry()  # 창의 위치와 크기 정보
@@ -82,15 +96,17 @@ class MainWindow(QWidget):
         frameInfo.moveCenter(center)  # 창크기의 직사각형을 중앙으로 설정
         self.move(frameInfo.topLeft())  # 창을 직사각형으로 이동
 
-
-
-
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    win = MainWindow()
+    sys.exit(app.exec_())
 
 # 해결할 것들
 
-# 텍스트 브라우저 하나, 버튼 2개(성덕이 짠거, 여기에 다이얼로그 연결) 추가하기
+# 텍스트 브라우저 하나(체크버튼 기능), 버튼 2개(성덕이 짠거, 여기에 다이얼로그 연결) 추가하기
 # QmainWindow?
 # accpet, reject -> Dialog 문제
+# 배경색
 
 # def onOKButtonClicked(self):
     #     self.accept()
