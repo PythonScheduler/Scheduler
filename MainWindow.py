@@ -1,82 +1,81 @@
 
-import sys
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QCalendarWidget, QDesktopWidget, QGridLayout,
-                             QGroupBox, QTextBrowser, QPushButton, QLabel)
-from PyQt5.QtGui import QIcon
+import sys, os
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QDate
+from SchedulDialog import ScheduleDialog
 
-class MainWindow(QWidget):
+path = 'C:/PythonScheduler'
 
+class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.dialog = ScheduleDialog() # 다이얼로그는 별개로 생성
 
     def initUI(self):
-        self.setWindowTitle('"야 꿀벌"')  # ('Scheduler')
-        self.setWindowIcon(QIcon('bee.png'))
+        self.createEveryday() # 최초 실행 시 파일 체크. 없으면 생성
 
+        # 그룹박스 layout에 추가 (Grid)
         grid = QGridLayout()
         grid.addWidget(self.createCalendarBox(),0,0,3,4)
         grid.addWidget(self.createToDoBox(),0,4,3,2)
         self.setLayout(grid)
 
-        self.center_and_size()
-        self.show()  # 순서 구애 받음
+        self.readEveryday() # 텍스트 브라우저에 파일 읽어옴
 
-    # 달력 박스 생성 함수
+
+    # Calendar 박스 생성 함수
     def createCalendarBox(self):
         groupBox = QGroupBox('Calendar')
-        groupBox.setFlat(True)
+        groupBox.setFlat(True) # 테두리 없음
 
         self.cal = QCalendarWidget(self) # self 쓰지 않으면 다른 메소드에서 사용에 문제됨
         self.cal.setGridVisible(True)
-        self.cal.clicked[QDate].connect(self.showDate)
 
-        self.lb = QLabel(self)
-        date = self.cal.selectedDate()
+        self.cal.activated[QDate].connect(self.showDialog) # 더블 클릭
+        self.cal.clicked[QDate].connect(self.showDate) # 한번 클릭
+
+        self.lb = QLabel(self) # 날짜 출력할 라벨
+        date = self.cal.selectedDate() # 처음에 출력할 때
         self.lb.setText(date.toString())
 
         calendarBox = QVBoxLayout()
         calendarBox.addWidget(self.cal)
         calendarBox.addWidget(self.lb)
-        calendarBox.addStretch()
+        # calendarBox.addStretch() 한쪽으로 미는 효과?
         groupBox.setLayout(calendarBox)
 
         return groupBox
+
 
     # ToDo 박스 생성 함수
     def createToDoBox(self):
         groupBox = QGroupBox('ToDo')
 
         self.everydayLb = QLabel(self)
-        self.everydayLb.setText('매일 할 일')
+        self.everydayLb.setText('# Everyday')
 
         self.everyday = QTextBrowser()
-        self.everyday.setAcceptRichText(True)
-        self.everyday.setOpenExternalLinks(True)
+        self.everyday.setAcceptRichText(True) # 서식 있는 텍스트 입력 가능
+        self.everyday.setOpenExternalLinks(True) # 하이퍼링크 연결 가능
 
         self.checkLb = QLabel(self)
-        self.checkLb.setText('체크')
+        self.checkLb.setText('# Day to Day')
 
         self.check = QTextBrowser()
         self.check.setAcceptRichText(True)
         self.check.setOpenExternalLinks(True)
 
-        # 확인 버튼
-        self.btnOK = QPushButton('확인')
-        # btnOK.clicked.connect(self.함수추가)
-
-        # 취소 버튼
-        self.btnCancel = QPushButton('취소')
-        # btnOK.clicked.connect(self.함수추가)
+        # 수정 버튼
+        self.modifyBtn = QPushButton('Modification')
+        self.modifyBtn.clicked.connect(self.showDialog) # 다이얼로그 불러오고 텍스트 브라우저 최신화
 
         toDoBox = QVBoxLayout()
         toDoBox.addWidget(self.everydayLb)
         toDoBox.addWidget(self.everyday)
         toDoBox.addWidget(self.checkLb)
         toDoBox.addWidget(self.check)
-        toDoBox.addWidget(self.btnOK)
-        toDoBox.addWidget(self.btnCancel)
+        toDoBox.addWidget(self.modifyBtn)
         groupBox.setLayout(toDoBox)
 
         return groupBox
@@ -85,32 +84,23 @@ class MainWindow(QWidget):
     def showDate(self, date):
         self.lb.setText(date.toString())
 
-    # 프로그램을 모니터 중앙에 배치하고 사이즈 지정 함수(시작할 때)
-    def center_and_size(self):
-        self.setFixedSize(750,550) # 창크기 고정
-        #self.resize(750, 550)
+    # 최초 실행시 폴더와 파일 체크하고 없으면 생성
+    def createEveryday(self):
+        if not os.path.isdir(path): # 폴더 없으면 폴더 생성
+            os.mkdir(path)
+        elif not os.path.isfile(path + '/Everyday.txt'): # 폴더 있고, 파일 없으면 파일 생성
+        # 메모장이 사전에 존재하거나 새로 만들때? 문제 또는 예외 처리 / 직접 접근할때
+            with open(path + '/Everyday.txt', 'w') as f:
+                f.write('')
 
-        # 프로그램을 모니터 중앙에 배치
-        frameInfo = self.frameGeometry()  # 창의 위치와 크기 정보
-        center = QDesktopWidget().availableGeometry().center()  # 사용하는 모니터 화면의 가운데 위치
-        frameInfo.moveCenter(center)  # 창크기의 직사각형을 중앙으로 설정
-        self.move(frameInfo.topLeft())  # 창을 직사각형으로 이동
+    # 메모장 읽어들여서 텍스트 브라우저에 출력하는 함수
+    def readEveryday(self):
+        with open(path + '/Everyday.txt', 'r') as f:
+            self.list = f.read()
+            self.everyday.append(self.list)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    win = MainWindow()
-    sys.exit(app.exec_())
-
-# 해결할 것들
-
-# 텍스트 브라우저 하나(체크버튼 기능), 버튼 2개(성덕이 짠거, 여기에 다이얼로그 연결) 추가하기
-# QmainWindow?
-# accpet, reject -> Dialog 문제
-# 배경색
-
-# def onOKButtonClicked(self):
-    #     self.accept()
-    # def onCancelButtonClicked(self):
-    #     self.reject()
-    # def showModal(self):
-    #     return super().exec_()
+    # dialog 호출하고 텍스트 브라우저 초기화 함수
+    def showDialog(self):
+        self.dialog.exec() # 포커스 텍스트브라우저로 
+        self.everyday.clear()
+        self.readEveryday()
