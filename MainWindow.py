@@ -88,7 +88,7 @@ class MainWidget(QWidget):
     def createEveryday(self):
         if not os.path.isdir(path): # 폴더 없으면 폴더 생성
             os.mkdir(path)
-        elif not os.path.isfile(path + '/Everyday.txt'): # 폴더 있고, 파일 없으면 파일 생성
+        if not os.path.isfile(path + '/Everyday.txt'): # 폴더 있고, 파일 없으면 파일 생성
         # 메모장이 사전에 존재하거나 새로 만들때? 문제 또는 예외 처리 / 직접 접근할때
             with open(path + '/Everyday.txt', 'w') as f:
                 f.write('')
